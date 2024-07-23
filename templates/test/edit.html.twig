@@ -1,0 +1,380 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editTestModal">Edit Test</a>
+
+    <!-- Modal -->
+    <div class="modal fade" id="editTestModal" aria-labelledby="editTestModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editTestModalLabel">Edit Test</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- Form Section -->
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <form id="testForm" action="{{ path('test.edit', {id: test.id}) }}" method="post">
+                                            <label class="h1 form-label">Test</label>
+                                            <textarea id="description" name="description" placeholder="Ajouter Une description" class="form-control mb-3" rows="3">{{ test.description }}</textarea>
+                                            <div class="mb-3 row">
+                                                <label class="col-sm-4 col-form-label">Echeance:</label>
+                                                <div class="col-sm-8">
+                                                    <input type="date" id="echeance" name="echeance" class="form-control" value="{{ test.dateEcheance ? test.dateEcheance|date('Y-m-d') : '' }}">
+                                                </div>
+                                            </div>
+                                            <div class="mb-3 row">
+                                                <label class="col-sm-4 col-form-label">Estimation:</label>
+                                                <div class="col-sm-8">
+                                                    <input type="text" id="estimation" name="estimation" class="form-control" value="{{ test.estimation }}">
+                                                </div>
+                                            </div>
+                                            <div class="mb-3 row">
+                                                <label class="col-sm-4 col-form-label">Tags:</label>
+                                                <div class="col-sm-8">
+                                                    <select id="tags" class="js-example-basic-multiple" name="tags[]" multiple="multiple">
+                                                        {% for tag in test.tags %}
+                                                            <option value="{{ tag }}" selected>{{ tag }}</option>
+                                                        {% endfor %}
+                                                        {% for tg in allTags %}
+                                                            {% if tg not in test.tags %}
+                                                                <option value="{{ tg }}">{{ tg }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3 row">
+                                                <label class="col-sm-4 col-form-label">Source:</label>
+                                                <div class="col-sm-8">
+                                                    <select id="source" class="js-example-basic-multiple form-control" name="source[]" multiple="multiple">
+                                                        {% for source in test.source %}
+                                                            <option value="{{ source }}" selected>{{ source }}</option>
+                                                        {% endfor %}
+                                                        {% for src in allSources %}
+                                                            {% if src not in test.source %}
+                                                                <option>{{ src }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3 row">
+                                                <label class="col-sm-4 col-form-label">Devis:</label>
+                                                <div class="col-sm-8">
+                                                    <input type="text" id="devis" name="devis" class="form-control" value="{{ test.devis }}">
+                                                </div>
+                                            </div>
+                                        </form>
+                                        <hr>
+                                        <form id="activityForm" action="{{ path('test.edit.activity', {id: test.id}) }}" method="post">
+                                            <div class="mb-3 row">
+                                                <label class="col-sm-4 col-form-label">Activite:</label>
+                                                <div class="col-sm-8">
+                                                    <select id="activity-type" class="form-control" name="type">
+                                                        <option value="Commentaire">Commentaire</option>
+                                                        <option>Email</option>
+                                                        <option>Appel</option>
+                                                        <option>Rappel</option>
+                                                        <option>SMS</option>
+                                                        <option>RDV</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div id="dynamic-inputs-container" class="mb-3">
+                                                <input type="text" class="form-control" placeholder="Commentaire" name="commentaire">
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-primary">Ajouter</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Activities Section -->
+                            <div class="col-lg-6">
+                                <div class="ibox float-e-margins">
+                                    <div class="ibox-title">
+                                        <h5>Liste des activités</h5>
+                                    </div>
+                                    <div class="ibox-content">
+                                        <div class="vertical-container dark-timeline center-orientation" id="activity-list">
+                                            {% for activity in activities %}
+                                                <div class="vertical-timeline-block" id="activity-{{ activity.id }}">
+                                                    <div class="vertical-timeline-icon navy-bg">
+                                                        {% if activity.type == "Commentaire" %}
+                                                        <i class="fa-solid fa-comment"></i>
+                                                        {% elseif activity.type == "Email" %}
+                                                            <i class="fa-solid fa-envelope"></i>
+                                                        {% elseif activity.type == "Appel" %}
+                                                            <i class="fa-solid fa-phone"></i>
+                                                        {% elseif activity.type == "Rappel" %}
+                                                            <i class="fa-solid fa-phone"></i>
+                                                        {% elseif activity.type == "RDV" %}
+                                                            <i class="fa-solid fa-calendar-days"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="vertical-timeline-content row">
+                                                        <div class="col-md-8">
+                                                            <h2>{{ activity.type }}</h2>
+                                                            {% if activity.commentaire %}
+                                                                <p>{{ activity.commentaire }}</p>
+                                                            {% endif %}
+                                                            {% if activity.email %}
+                                                                <p>{{ activity.email }}</p>
+                                                            {% endif %}
+                                                            {% if activity.telephone %}
+                                                                <p>{{ activity.telephone }}</p>
+                                                            {% endif %}
+                                                            <small class="text-muted">{{ activity.date|date('d M Y') }}</small>
+                                                        </div>
+                                                        <div class="col-md-4 text-right">
+                                                            <form class="delete-activity-form" action="{{ path('test.activity.delete', {id: activity.id}) }}" method="post" style="display:inline;">
+                                                                <input type="hidden" name="test_id" value="{{ test.id }}">
+                                                                <button type="submit" aria-label="Delete activity" style="border:none; background: none;">
+                                                                    <i class="fa-solid fa-x"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                {% if not loop.last %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function() {
+            $('#activity-type').change(function() {
+                var selectedOption = $(this).val();
+                var dynamicInputsContainer = $('#dynamic-inputs-container');
+
+                // Clear previous inputs
+                dynamicInputsContainer.empty();
+
+                // Show inputs based on selected option
+                if (selectedOption === 'Commentaire') {
+                    dynamicInputsContainer.append('<input type="text" class="form-control my-2" placeholder="Commentaire" name="commentaire">');
+                } else if (selectedOption === 'Email') {
+                    dynamicInputsContainer.append('<input type="email" class="form-control my-2" placeholder="Email" name="email">');
+                    dynamicInputsContainer.append('<input type="email" class="form-control my-2" placeholder="Destinataire" name="destinataire">');
+                    dynamicInputsContainer.append('<input type="text" class="form-control my-2" placeholder="Commentaire" name="commentaire">');
+                    dynamicInputsContainer.append('<label>Destinataire</label>');
+                    dynamicInputsContainer.append('<input type="checkbox" name="typeTel">');
+                } else if (selectedOption === 'Appel') {
+                    dynamicInputsContainer.append('<input type="tel" class="form-control my-2" placeholder="Numéro de téléphone" name="telephone">');
+                    dynamicInputsContainer.append('<input type="text" class="form-control my-2" placeholder="Commentaire" name="commentaire">');
+                    dynamicInputsContainer.append('<label>Destinataire</label>');
+                    dynamicInputsContainer.append('<input type="checkbox" name="typeTel">');
+                } else if (selectedOption === 'Rappel') {
+                    dynamicInputsContainer.append('<input type="text" class="form-control my-2" placeholder="Rappel" name="telephone">');
+                    dynamicInputsContainer.append('<input type="text" class="form-control my-2" placeholder="Commentaire" name="commentaire">');
+                    dynamicInputsContainer.append('<div class="form-check">');
+                    dynamicInputsContainer.append('<input type="checkbox" name="typeTel" class="form-check-input" id="Destinataire">');
+                    dynamicInputsContainer.append('<label for="Destinataire" class="form-check-label">Destinataire</label>');
+                    dynamicInputsContainer.append('</div>');
+                } else if (selectedOption === 'SMS') {
+                    dynamicInputsContainer.append('<input type="text" class="form-control" placeholder="SMS" name="SMS">');
+                    dynamicInputsContainer.append('<input type="text" class="form-control" placeholder="Commentaire" name="commentaire">');
+                    dynamicInputsContainer.append('<label>Destinataire</label>');
+                    dynamicInputsContainer.append('<input type="checkbox" name="typeTel">');
+                } else if (selectedOption === 'RDV') {
+                    dynamicInputsContainer.append('<input type="datetime-local" class="form-control my-2" placeholder="Date et heure du RDV" name="date">');
+                    dynamicInputsContainer.append('<input type="text" class="form-control my-2" placeholder="Commentaire" name="commentaire">');
+                    dynamicInputsContainer.append('<label>Destinataire</label>');
+                    dynamicInputsContainer.append('<input type="checkbox" name="typeTel">');
+                }
+            });
+
+            // Initialize select2 for tags and source
+            function initializeSelect2() {
+                $('#tags, #source').select2({
+                    dropdownParent: $("#editTestModal"),
+                    tags: true,
+                    tokenSeparators: [',', ' '],
+                    createTag: function (params) {
+                        var term = $.trim(params.term);
+
+                        if (term === '') {
+                            return null;
+                        }
+
+                        return {
+                            id: term,
+                            text: term,
+                            newTag: true // Differentiate created tags
+                        };
+                    }
+                }).on('change', function(e) {
+                    // Apply color to selected tags
+                    $('.select2-selection__choice').each(function() {
+                        var tagText = $(this).attr('title'); // Get the tag text
+                        var color = getColorForTag(tagText); // Get color based on tag text
+                        $(this).css('background-color', color); // Set background color dynamically
+                    });
+                });
+
+                // Initialize colors for initially selected tags
+                $('.select2-selection__choice').each(function() {
+                    var tagText = $(this).attr('title'); // Get the tag text
+                    var color = getColorForTag(tagText); // Get color based on tag text
+                    $(this).css('background-color', color); // Set background color dynamically
+                });
+            }
+
+            // Function to generate a consistent color based on tag text
+            function getColorForTag(tagText) {
+                // Example: Generate color based on a hash of the tag text
+                var hash = 0;
+                for (var i = 0; i < tagText.length; i++) {
+                    hash = tagText.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                var color = Math.abs(hash % 360);
+                return 'hsl(' + color + ', 70%, 50%)'; // Use HSL color space for better visual distinction
+            }
+
+            // Initialize Select2
+            initializeSelect2();
+
+            // Handle form changes with AJAX
+            $('#testForm input, #testForm textarea, #testForm select').on('change', function() {
+                var formData = $('#testForm').serialize();
+
+                $.ajax({
+                    url: $('#testForm').attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        // Update details displayed on success
+                        $('#descriptionOutput').text(response.description);
+                        $('#devisOutput').text(response.devis);
+                        $('#estimationOutput').text(response.estimation);
+                        $('#echeanceOutput').text(response.dateEcheance);
+                        $('#tagsList').empty();
+                        $.each(response.tags, function(index, value) {
+                            var color = getColorForTag(value); // Get color based on tag text
+                            $('#tagsList').append('<li style="background-color: ' + color + ';">' + value + '</li>');
+                        });
+                        $('#sourceList').empty();
+                        $.each(response.source, function(index, value) {
+                            $('#sourceList').append('<li>' + value + '</li>');
+                        });
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+            $('#activityForm').submit(function(event) {
+                event.preventDefault();
+                var formData = $(this).serialize();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            var activity = response.activity;
+                            var iconHtml = '';
+
+                            // Determine icon based on activity type
+                            if (activity.type === 'Commentaire') {
+                                iconHtml = '<i class="fa-solid fa-comment"></i>';
+                            } else if (activity.type === 'Email') {
+                                iconHtml = '<i class="fa-solid fa-envelope"></i>';
+                            } else if (activity.type === 'Appel') {
+                                iconHtml = '<i class="fa-solid fa-phone"></i>';
+                            } else if (activity.type === 'Rappel') {
+                                iconHtml = '<i class="fa-solid fa-phone"></i>';
+                            } else if (activity.type === 'RDV') {
+                                iconHtml = '<i class="fa-solid fa-calendar-days"></i>';
+                            }
+
+                            var activityHtml = `
+                        <div class="vertical-timeline-block" id="activity-${activity.id}">
+                            <div class="vertical-timeline-icon navy-bg">
+                                ${iconHtml}
+                            </div>
+                            <div class="vertical-timeline-content row">
+                                <div class="col-md-8">
+                                    <h2>${activity.type}</h2>`;
+                            if (activity.commentaire) {
+                                activityHtml += `<p>${activity.commentaire}</p>`;
+                            }
+                            if (activity.email) {
+                                activityHtml += `<p>${activity.email}</p>`;
+                            }
+                            if(activity.telephone){
+                                activityHtml += `<p>${activity.telephone}</p>`;
+                            }
+                            activityHtml += `
+                                    <small class="text-muted">${activity.date}</small>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <form class="delete-activity-form" action="${response.deleteUrl}" method="post" style="display:inline;">
+                                        <input type="hidden" name="test_id" value="${response.testId}">
+                                        <button type="submit" aria-label="Delete activity" style="border:none; background: none;">
+                                            <i class="fa-solid fa-x"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>`;
+                            $('#activity-list').append(activityHtml);
+                            $('#activityForm')[0].reset();
+                        } else {
+                            alert('Failed to create activity.');
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                        alert('Failed to create activity.');
+                    }
+                });
+            });
+
+            // Handle delete activity with AJAX
+            $('#activity-list').on('submit', '.delete-activity-form', function(event) {
+                event.preventDefault(); // Prevent form submission
+
+                var form = $(this);
+                var actionUrl = form.attr('action');
+                var activityBlock = form.closest('.vertical-timeline-block');
+
+                $.ajax({
+                    url: actionUrl,
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            activityBlock.remove(); // Remove activity block on success
+                        } else {
+                            alert('Failed to delete activity.');
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                        alert('Failed to delete activity.');
+                    }
+                });
+            });
+
+        });
+    </script>
+{% endblock %}

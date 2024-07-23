@@ -1,0 +1,23 @@
+{% extends  'base.html.twig' %}
+
+{% block body %}
+    {% for test in tests %}
+        <ul>
+            <li>{{ test.description }}</li>
+            <li>{{ test.devis }}</li>
+            <li>{{ test.estimation }}</li>
+            <li>{{ test.dateEcheance | date() }}</li>
+            <li>
+                    {% for tag in test.tags %}
+                        {{ tag }}
+                    {% endfor %}
+            </li>
+            <li>
+                {% for sourc in test.source %}
+                    {{ sourc }}
+                {% endfor %}
+            </li>
+            <li><a href="{{ path('test.edit',{id: test.id}) }}">modifier</a></li>
+        </ul>
+    {% endfor %}
+{% endblock %}

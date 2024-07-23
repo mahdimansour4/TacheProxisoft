@@ -1,0 +1,42 @@
+{# templates/home.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Home{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Hello</h1>
+        <ul class="list-group">
+        {% if activite %}
+             <li class="list-group-item">{{ activite.type }}</li>
+            {% if activite.commentaire %}
+                <li class="list-group-item">{{ activite.commentaire }}</li>
+            {% endif %}
+            {% if activite.email %}
+                <li class="list-group-item">{{ activite.email }}</li>
+            {% endif %}
+            {% if activite.destinataire %}
+                <li class="list-group-item">{{ activite.destinataire }}</li>
+            {% endif %}
+            {% if activite.telephone %}
+                <li class="list-group-item">{{ activite.telephone }}</li>
+            {% endif %}
+            {% if activite.typeAppel %}
+                <li class="list-group-item">{{ activite.typeAppel}}</li>
+            {% endif %}
+            <li class="list-group-item">{{ activite.date | date()}}</li>
+        {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function() {
+            $('.js-example-tags').select2({
+                tags: true,
+                tokenSeparators: [',', ' ']
+            });
+        });
+    </script>
+{% endblock %}
